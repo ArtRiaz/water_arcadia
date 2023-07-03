@@ -7,8 +7,8 @@ from keyboards.reply import get_back
 async def send_geo(callback: CallbackQuery):
     await callback.message.delete()
     await callback.bot.send_location(chat_id=callback.from_user.id,
-                                     latitude=48.6316401,
-                                     longitude=7.3989481,
+                                     latitude=46.4698845,
+                                     longitude=30.7390622,
                                      reply_markup=get_back()
                                      )
 
@@ -16,9 +16,8 @@ async def send_geo(callback: CallbackQuery):
 async def send_phone(callback: CallbackQuery):
     await callback.message.delete()
     await callback.bot.send_contact(chat_id=callback.from_user.id,
-                                    phone_number='+33769677610',
-                                    first_name='Артем',
-                                    last_name='Рязанцев',
+                                    phone_number='+38068-555-77-12',
+                                    first_name='Замовлення води',
                                     reply_markup=get_back())
 
 

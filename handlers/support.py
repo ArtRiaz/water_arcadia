@@ -3,6 +3,7 @@ from create_bot import dp, bot
 from aiogram.dispatcher.filters import Text
 from keyboards.inline_support import support_keyboard, support_callback
 from aiogram.dispatcher import FSMContext
+from keyboards.reply import get_back
 
 
 async def ask_support(message: types.Message):
@@ -29,7 +30,7 @@ async def get_support_message(message: types.Message, state: FSMContext):
     keyboard = await support_keyboard(messages='one', user_id=message.from_user.id)
     await message.copy_to(second_id, reply_markup=keyboard)
 
-    await message.answer('Ви відправили повідомлення')
+    await message.answer('Ви відправили повідомлення', reply_markup=get_back())
     await state.reset_state()
 
 

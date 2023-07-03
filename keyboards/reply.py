@@ -11,7 +11,7 @@ def kb_menu():
 
 def get_kb_menu():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[
-        KeyboardButton('Наша компанія'), KeyboardButton('Календар')
+        KeyboardButton('Наша компанія'), KeyboardButton('Режим роботи')
     ], [
         KeyboardButton('Зробити заказ'), KeyboardButton('Найчастіщі запитання')
     ], [

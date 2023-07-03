@@ -8,22 +8,9 @@ from aiogram.dispatcher.filters import Text
 
 
 async def questions(message: types.Message):
-    await bot.send_photo(chat_id=message.from_user.id, photo='https://yandex.by/images/search?img_url=https%3A%2F'
-                                                             '%2Fsun9-81.userapi.com%2Fimpg '
-                               '%2FCOLOTXGpYefkgXG2sLaO4kfkKzCeBDCfhliaRQ%2FkN3LG58SPNo.jpg%3Fsize%3D960x720'
-                               '%26quality%3D95%26sign%3De74cffdf9ce01aaf559fe0a22cf12d73%26c_uniq_tag'
-                               '%3DeFTmrRuHf7H9ytd67uxVXIisonX-znqS2cjZtq-Z5uc%26type%3Dalbum&lr=87&nomisspell=1'
-                               '&ogl_url=https%3A%2F%2Fsun9-81.userapi.com%2Fimpg'
-                               '%2FCOLOTXGpYefkgXG2sLaO4kfkKzCeBDCfhliaRQ%2FkN3LG58SPNo.jpg%3Fsize%3D960x720'
-                               '%26quality%3D95%26sign%3De74cffdf9ce01aaf559fe0a22cf12d73%26c_uniq_tag'
-                               '%3DeFTmrRuHf7H9ytd67uxVXIisonX-znqS2cjZtq-Z5uc%26type%3Dalbum&pos=3&redircnt'
-                               '=1685175286.1&rlt_url=http%3A%2F%2F239detsad.ru%2FKartinka%2FMarker_gruppa'
-                               '%2Fvolshebnye_kapelki.png&rpt=simage&source=related-5&text=вода%20картинки%20для%20'
-                               'детей', reply_markup=get_back())
-    await message.answer("Відповіді на ваші запитання:", reply_markup=ikb_question())
-
-
-
+    with open('water_start.jpg', 'rb') as photo:
+        await bot.send_photo(chat_id=message.from_user.id, photo=photo, reply_markup=get_back())
+        await message.answer("Відповіді на ваші запитання:", reply_markup=ikb_question())
 
 
 async def question_1(callback: CallbackQuery):
@@ -49,19 +36,23 @@ async def question_4(callback: CallbackQuery):
     await callback.message.answer("Зв'язатись з нами можна через розділ Контакти та наш сайт: ",
                                   reply_markup=ikb_question_contact())
 
-async def inline_cancel(callback:CallbackQuery):
+
+async def inline_cancel(callback: CallbackQuery):
     await callback.message.delete()
     await callback.message.answer("Відміна", reply_markup=ikb_question())
 
-async def inline_contact(callback:CallbackQuery):
+
+async def inline_contact(callback: CallbackQuery):
     await callback.message.delete()
     await callback.message.answer("Як з нами зв'язатись:", reply_markup=ikb_contact())
 
-async def inline_company(callback:CallbackQuery):
+
+async def inline_company(callback: CallbackQuery):
     await callback.message.delete()
     await callback.message.answer("Вода «Arcadia» завдяки природному походження нашої води, вона не просто смачна "
                                   "сама по собі, а й дарує незабутній смак усім вашим стравам та напоям.",
                                   reply_markup=get_back())
+
 
 def question_menu(dp: Dispatcher):
     dp.register_message_handler(questions, Text(equals="Найчастіщі запитання"))
@@ -72,4 +63,3 @@ def question_menu(dp: Dispatcher):
     dp.register_callback_query_handler(inline_cancel, text='cancel')
     dp.register_callback_query_handler(inline_contact, text='contact_bot')
     dp.register_callback_query_handler(inline_company, text='info_bot')
-

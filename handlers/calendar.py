@@ -5,7 +5,9 @@ from aiogram.dispatcher.filters import Text
 
 
 async def cmd_calendar(message: types.Message):
-    await message.answer('Мені потрібно розуміти яку функцію несе ця кнопка, що там повинно бути и т.д.', reply_markup=get_back())
+    with open('logo.jpg', 'rb') as photo:
+        await bot.send_photo(chat_id=message.from_user.id, photo=photo, caption='<b>Ми працюєм кожен день з 9:00 по 19:00</b>', reply_markup=get_back())
 
-def handler_calendar(dp:Dispatcher):
-    dp.register_message_handler(cmd_calendar, Text(equals="Календар"))
+
+def handler_calendar(dp: Dispatcher):
+    dp.register_message_handler(cmd_calendar, Text(equals="Режим роботи"))

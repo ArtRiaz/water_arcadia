@@ -3,12 +3,11 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def ikb_contact():
     ikb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton('Наш сайт',
-                             url='https://www.google.com')
+        InlineKeyboardButton('www.arcadia.od.ua', url='https://www.arcadia.od.ua/')
     ], [InlineKeyboardButton('Інстаграм', url='https://www.instagram.com/artemriazantsev22/')], [
         InlineKeyboardButton('Геолокація', callback_data='Геолокация')
     ], [
-        InlineKeyboardButton('Подзвонити', callback_data='Вызов')
+        InlineKeyboardButton('+38(068)-555-77-12', callback_data='Вызов')
     ]])
 
     return ikb
@@ -28,7 +27,7 @@ def ikb_question():
 
 def ikb_question_order():
     ikb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton("Наш сайт", url='https://www.google.com')
+        InlineKeyboardButton("Наш сайт", url='http://www.arcadia.od.ua/')
     ], [InlineKeyboardButton("Зробити заказ на боті", callback_data="order_bot")],[InlineKeyboardButton("Відміна", callback_data="cancel")]])
 
     return ikb
@@ -36,7 +35,7 @@ def ikb_question_order():
 
 def ikb_question_info():
     ikb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton("Наш сайт", url='https://www.google.com')
+        InlineKeyboardButton("Наш сайт", url='http://www.arcadia.od.ua/')
     ], [InlineKeyboardButton("Наша компанія", callback_data="info_bot")], [
         InlineKeyboardButton("Відміна", callback_data="cancel")
     ]])
@@ -45,7 +44,7 @@ def ikb_question_info():
 
 def ikb_question_contact():
     ikb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton("Наш сайт", url='https://www.google.com')
+        InlineKeyboardButton("Наш сайт", url='http://www.arcadia.od.ua/')
     ], [InlineKeyboardButton("Контакти", callback_data="contact_bot")],[InlineKeyboardButton("Відміна", callback_data="cancel")]])
 
     return ikb
