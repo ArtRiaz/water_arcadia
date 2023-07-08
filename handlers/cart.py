@@ -8,7 +8,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, LabeledPrice, Pre
     ShippingQuery
 
 from keyboards.reply import get_back, get_kb_menu
-from create_bot import PAYMENT_TOKEN
+from create_bot import payment_token
 from decimal import Decimal
 import asyncpg
 
@@ -50,7 +50,7 @@ async def send_buy(message: types.Message):
     await bot.send_invoice(message.chat.id,
                            title='Arcadia',
                            description='вода',
-                           provider_token=PAYMENT_TOKEN,
+                           provider_token=payment_token,
                            currency='UAH',
                            need_phone_number=True,
                            need_shipping_address=True,

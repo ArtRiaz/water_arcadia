@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:14-alpine
+    restart: on-failure
+    env_file:
+      - ./.env
+      POSTGRES_PASSWORD: 2288
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  bot:
+    build: .
+    command: sh -c "make migrate && python -m bot"
+    env_file:
+      - ./.env
+    restart: always
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+
+
