@@ -1,13 +1,13 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types, Dispatcher
-from create_bot import dp, bot
+from create_bot import dp, bot, DATABASE_URL
 from aiogram.dispatcher.filters import Text, Command
 from data_base.sqlite_db import sql_add_command, sql_read2, sql_delete_command
 from keyboards.admin_reply import kb_admin, kb_admin_cancel
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from create_bot import support_ids
-import sqlite3
+import asyncpg
 from mailing import bot_mailing
 from aiogram.types.callback_query import CallbackQuery
 from asyncio import sleep
@@ -84,6 +84,7 @@ async def load_price(message: types.Message, state: FSMContext):
         await state.finish()
 
 
+#########################################################################################################################
 async def del_callback_run(callback_query: types.CallbackQuery):
     await sql_delete_command(callback_query.data.replace('del ', ''))
     await callback_query.answer(text=f"{callback_query.data.replace('del ', '')} видалена.", show_alert=True)
@@ -92,12 +93,15 @@ async def del_callback_run(callback_query: types.CallbackQuery):
 async def delete_items(message: types.Message):
     if message.from_user.id == ID:
         read = await sql_read2()
+        print(read)
         for ret in read:
-            await bot.send_photo(message.from_user.id, ret[1], f'{ret[2]}\nОпис: {ret[3]}\nЦіна: {ret[4]} грн')
+            await bot.send_photo(message.from_user.id, ret[1], f'{ret[2]}\nОпис: {ret[3]}\nЦіна: {ret[4]} грн ')
             await bot.send_message(message.from_user.id, text='Видалити товар?', reply_markup=InlineKeyboardMarkup(). \
                                    add(
                 InlineKeyboardButton(f'Видалити: {ret[3]}', callback_data=f'del {ret[3]}')))
 
+
+########################################################################################################################
 
 async def send_all(message: types.Message):
     if message.chat.id == ID:
@@ -118,19 +122,15 @@ async def mailing_text(message: types.Message, state: FSMContext):
 
 
 async def next(callback: CallbackQuery, state: FSMContext):
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    users = cursor.execute('SELECT "user_id" FROM "users"').fetchall()
+    con = await asyncpg.connect(DATABASE_URL)
+    users = await con.fetch('SELECT "user_id" FROM "users"')
     print(users)
-    cursor.close()
-    connect.commit()
-    connect.close()
+    await con.close()
     data = await state.get_data()
     text = data.get('text')
     await state.finish()
     for user in users:
         for i in user:
-            print(type(i))
             await dp.bot.send_message(chat_id=i, text=text)
             await sleep(0.33)
     await callback.message.answer('Розсилка виконана', reply_markup=kb_admin())
@@ -155,13 +155,10 @@ async def mailing_send(message: types.Message, state: FSMContext):
 
 
 async def start_next(callback: CallbackQuery, state: FSMContext):
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    users = cursor.execute('SELECT "user_id" FROM "users"').fetchall()
+    con = await asyncpg.connect(DATABASE_URL)
+    users = await con.fetch('SELECT "user_id" FROM "users"')
     print(users)
-    cursor.close()
-    connect.commit()
-    connect.close()
+    await con.close()
     data = await state.get_data()
     text = data.get('text')
     photo = data.get('photo')
@@ -186,14 +183,13 @@ async def quit(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer('Розсилка відмінена', reply_markup=kb_admin())
 
 
-async def stasistic(message:types.Message):
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    result = cursor.execute('SELECT "user_id" FROM "users"').fetchall()
+########################################################################################################################
+
+async def stasistic(message: types.Message):
+    con = await asyncpg.connect(DATABASE_URL)
+    result = await con.fetch('SELECT "user_id" FROM "users"')
     print(result)
-    cursor.close()
-    connect.commit()
-    connect.close()
+    await con.close()
     await message.answer(f'Кількість відвідувачів бота: {len(result)}')
 
 
@@ -218,4 +214,3 @@ def register_handlers_start_admin(dp: Dispatcher):
     dp.register_callback_query_handler(start_next, text='next', state=bot_mailing.photo)
     dp.register_callback_query_handler(next, text='next', state=bot_mailing.state)
     dp.register_message_handler(stasistic, Text(equals='Статистика'))
-

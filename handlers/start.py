@@ -1,12 +1,13 @@
 from aiogram import types, Dispatcher
-from create_bot import dp, bot
+from create_bot import dp, bot, DATABASE_URL
 from keyboards.reply import kb_menu, get_kb_menu
 from aiogram.dispatcher.filters import Text
-import sqlite3
+import asyncpg
 
 
 async def cmd_start(message: types.Message):
     with open('arc.jpg', 'rb') as photo:
+        con = await asyncpg.connect(DATABASE_URL)
         await bot.send_photo(chat_id=message.from_user.id,
                              photo=photo,
                              caption=f'<b>Вітаю Вас {message.from_user.full_name}!\n'
@@ -16,12 +17,13 @@ async def cmd_start(message: types.Message):
                                      f'водою максимальної кількості клієнтів, як приватних осіб, так і підприємств, '
                                      f'офісів, організацій громадського харчування та інших.</b> '
                              , reply_markup=kb_menu())
-        connect = sqlite3.connect('water.db')
-        cur = connect.cursor()
-        cur.execute('INSERT INTO users(user_id, name) VALUES(?, ?)', [message.chat.id, message.chat.first_name])
-        cur.close()
-        connect.commit()
-        connect.close()
+
+        await con.execute('INSERT INTO users(user_id, name) VALUES($1, $2)', message.chat.id, message.chat.first_name)
+
+
+        # cur.close()
+        # connect.commit()
+        # connect.close()
 
 
 async def cmd_menu(message: types.Message):

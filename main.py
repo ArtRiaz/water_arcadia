@@ -11,7 +11,7 @@ logging.basicConfig(format=u'%(filename)s [LINE:%(lineno)d] #%(levelname)-8s [%(
 
 
 async def on_startup(_):
-    sql_start()
+    await sql_start()
     print('Бот запущен')
     print('База данных запущена')
     await set_commands(bot=bot)

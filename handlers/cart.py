@@ -1,8 +1,7 @@
 from aiogram import types, Dispatcher
-from create_bot import dp, bot, support_ids
+from create_bot import dp, bot, support_ids, DATABASE_URL
 from aiogram.dispatcher.filters import Text
 from aiogram.types.message import ContentType
-import sqlite3
 from aiogram.dispatcher.filters import Command, Text
 from data_base.sqlite_db import cb
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, LabeledPrice, PreCheckoutQuery, ShippingOption, \
@@ -11,56 +10,45 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, LabeledPrice, Pre
 from keyboards.reply import get_back, get_kb_menu
 from create_bot import PAYMENT_TOKEN
 from decimal import Decimal
+import asyncpg
 
 
 async def empty_cart(message: types.Message):
+    global con
     user_id = message.chat.id
 
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    cursor.execute('DELETE FROM cart WHERE user_id=(?)', [user_id])
-    cursor.close()
-    connect.commit()
-    connect.close()
+    con = await asyncpg.connect(DATABASE_URL)
+    await con.execute('DELETE FROM cart WHERE user_id=($1)', user_id)
 
     await message.answer('Корзина пуста', reply_markup=get_back())
 
 
 async def add_cart(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer(cache_time=10)
-
+    con = await asyncpg.connect(DATABASE_URL)
     user_id = callback.message.chat.id
     product_id = callback_data.get('id')
-
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    cursor.execute('INSERT INTO cart(user_id, product_id) VALUES (?, ?)', [user_id, product_id])
-    cursor.close()
-    connect.commit()
-    connect.close()
+    print(product_id)
+    await con.execute('INSERT INTO cart(user_id, product_id) VALUES ($1, $2)', user_id, int(product_id))
 
     await callback.message.answer('Додав!', reply_markup=ReplyKeyboardMarkup(resize_keyboard=True).add(
         KeyboardButton('Оплатити'), KeyboardButton('Очистити корзину')))
 
 
 async def send_buy(message: types.Message):
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    data = cursor.execute('SELECT * FROM cart WHERE user_id=(?)', [message.chat.id]).fetchall()
-    cursor.close()
-    connect.commit()
-    cursor = connect.cursor()
+    con = await asyncpg.connect(DATABASE_URL)
+    data = await con.fetch('SELECT * FROM cart WHERE user_id=($1)', message.chat.id)
+
     new_data = []
     for i in range(len(data)):
-        new_data.append(cursor.execute('SELECT * FROM items WHERE id=(?)', [data[i][2]]).fetchall())
-    cursor.close()
-    connect.commit()
-    connect.close()
+        value = await con.fetch('SELECT * FROM items WHERE id=($1)', data[i][2])
+        new_data.append(value)
+
     new_data = [new_data[i][0] for i in range(len(new_data))]
     prices = [LabeledPrice(label=(i[2] + ' ' + i[3]), amount=i[4] * 100) for i in new_data]
 
     await bot.send_invoice(message.chat.id,
-                           title='назва',
+                           title='Arcadia',
                            description='вода',
                            provider_token=PAYMENT_TOKEN,
                            currency='UAH',
@@ -99,31 +87,26 @@ async def checkout_procces(pre_checkout_query: PreCheckoutQuery):
 
 
 async def s_pay(message: types.Message):
-    connect = sqlite3.connect('water.db')
-    cursor = connect.cursor()
-    data = cursor.execute('SELECT * FROM cart WHERE user_id=(?)', [message.chat.id]).fetchall()
-    print(data)
-    cursor.close()
-    connect.commit()
-    cursor = connect.cursor()
+    con = await asyncpg.connect(DATABASE_URL)
+    data = await con.fetch('SELECT * FROM cart WHERE user_id=($1)', message.chat.id)
+
     new_data = []
     for i in range(len(data)):
-        new_data.append(cursor.execute('SELECT * FROM items WHERE id=(?)', [data[i][2]]).fetchall())
-    cursor.close()
-    connect.commit()
+        value = await con.fetch('SELECT * FROM items WHERE id=($1)', data[i][2])
+        new_data.append(value)
     new_data = [new_data[i][0] for i in range(len(new_data))]
-    print(new_data)
-    cursor = connect.cursor()
-    cursor.execute('DELETE FROM cart WHERE user_id=(?)', [message.chat.id])
-    cursor.close()
-    connect.commit()
-    prices = [i[2] + ' ' + i[3] for i in new_data]
-    print(prices)
+    await con.execute('DELETE FROM cart WHERE user_id=($1)', message.chat.id)
     await bot.send_message(chat_id=message.chat.id, text='Оплата пройшла вдало!', reply_markup=get_kb_menu())
+
+    prices = [i[2] + ' ' + i[3] for i in new_data]
+    order = (' '.join(map(str, prices)))
     for admin in support_ids:
-        await bot.send_message(chat_id=admin, text=f'Ви отримали замовлення:{prices}')
         await bot.send_message(chat_id=admin,
-                               text=f'Інформація про замовлення :{message.successful_payment.order_info}')
+                               text=f'Інформація про замовлення :\n'
+                                    f'Товар: {order}\n'
+                                    f'Номер телофону: {message.successful_payment.order_info.phone_number}\n'
+                                    f'Адреса: {message.successful_payment.order_info.shipping_address.city}, {message.successful_payment.order_info.shipping_address.street_line1}\n'
+                                    f'Сума: {message.successful_payment.total_amount / 100} грн')
 
 
 def cart(dp: Dispatcher):
@@ -132,4 +115,4 @@ def cart(dp: Dispatcher):
     dp.register_message_handler(send_buy, Text(equals='Оплатити'))
     dp.register_pre_checkout_query_handler(checkout_procces, lambda q: True)
     dp.register_message_handler(s_pay, content_types=ContentType.SUCCESSFUL_PAYMENT)
- #   dp.register_shipping_query_handler(shipping_check)
+#   dp.register_shipping_query_handler(shipping_check)
