@@ -1,3 +1,5 @@
+version: '3.1'
+
 services:
 
   db:
@@ -7,8 +9,8 @@ services:
     ports:
       - 5432:5432
     env_file:
-      - "./env"
-      POSTGRES_PASSWORD:
+      - ".env"
+#    network_mode: "host"
 
   adminer:
     container_name: adminer
@@ -16,17 +18,20 @@ services:
     restart: always
     ports:
       - 8080:8080
+#    network_mode: "host"
 
-  tg_bot:
+  tgbot:
     container_name: bot
-    build:
-      context: .
-    command:
-      - python3 main.py
+    build: .
+    volumes:
+      - .:/src
+    command: python3 main.py
     restart: always
+    network_mode: "host"
 
     env_file:
-      - "./env"
+      - ".env"
+
 
 
 
