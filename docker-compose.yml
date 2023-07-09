@@ -25,13 +25,13 @@ services:
     build: .
     volumes:
       - .:/src
-    command: python3 main.py
+    command: python main.py
     restart: always
     network_mode: "host"
-
     env_file:
       - ".env"
-
+    depends_on:
+      - db
 
 
 
