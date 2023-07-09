@@ -1,6 +1,10 @@
-FROM python:3.9-alpine
+FROM python:3
 
-RUN mkdir /src
-WORKDIR /src
-COPY . /src
-RUN pip install -r requirements.txt
+WORKDIR /usr/src/app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD [ "python", "main.py" ]
