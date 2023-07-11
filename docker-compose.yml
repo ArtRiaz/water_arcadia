@@ -10,7 +10,7 @@ services:
     env_file:
        - ".env"
     environment:
-      DB_PASS: $DB_PASS
+      DB_PASS: 2288
     restart: always
     ports:
       - 5432:5432
@@ -23,7 +23,7 @@ services:
     container_name: bot
     build:
       context: .
-    command: python mail.py
+    command: python main.py
     networks:
       - botnet
     restart: always
