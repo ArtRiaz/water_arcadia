@@ -1,34 +1,45 @@
 version: '3.1'
 
 services:
-
   db:
-    image: postgres
-    restart: always
-    ports:
-      - 5433:5432
+    # ВНИМАТЕЛЬНО! ВОТ ЭТО НАЗВАНИЕ СЕРВИСА - db - ДОЛЖНО БЫТЬ УКАЗАНО В БОТЕ КАК host В ПОДКЛЮЧЕНИИ К БАЗЕ ИЗ БОТА
+    # ТО ЕСТЬ НЕ АЙПИШНИК И НЕ ЛОКАЛХОСТ, А db
+    # DB_HOST: db
+    container_name: database
+    image: sameersbn/postgresql:10-2
+    env_file:
+       - ".env"
     environment:
-      POSTGRES_PASSWORD: 2288
-      POSTGRES_USER: postgres
-      POSTGRES_DB: arcadia
-    volumes:
-      - ./database:/docker-entrypoint-initdb.d
-
-  adminer:
-    image: adminer
+      DB_PASS: $DB_PASS
     restart: always
     ports:
-      - 8080:8080
+      - 5432:5432
+    networks:
+      - botnet
+    volumes:
+      - ./postgres:/var/lib/postgresql
 
   tgbot:
     container_name: bot
-    build: .
-    command: python main.py
+    build:
+      context: .
+    command: python mail.py
+    networks:
+      - botnet
     restart: always
     env_file:
       - ".env"
+    volumes:
+      - .:/src
+    # Бот стартует после запуска базы
     depends_on:
       - db
+
+# указываются используемые сети
+networks:
+  botnet:
+    # указывается драйвер сети
+    driver: bridge
 
 
 
