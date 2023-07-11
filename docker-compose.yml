@@ -5,14 +5,20 @@ services:
   db:
     image: postgres
     restart: always
+    ports:
+      - 5433:5432
     environment:
       POSTGRES_PASSWORD: 2288
+      POSTGRES_USER: postgres
+      POSTGRES_DB: arcadia
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - "8080:8080"
+      - 8080:8080
 
   tgbot:
     container_name: bot
