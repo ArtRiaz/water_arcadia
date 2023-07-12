@@ -2,7 +2,6 @@ from aiogram import Bot, Dispatcher
 from environs import Env
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-DATABASE_URL = "postgres://postgres:2288@localhost:5432/arcadia"
 
 env = Env()
 env.read_env()

@@ -1,13 +1,12 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types, Dispatcher
-from create_bot import dp, bot, DATABASE_URL
+from create_bot import dp, bot
 from aiogram.dispatcher.filters import Text, Command
-from data_base.sqlite_db import sql_add_command, sql_read2, sql_delete_command
+from data_base.sqlite_db import sql_add_command, sql_read2, sql_delete_command, con, cur
 from keyboards.admin_reply import kb_admin, kb_admin_cancel
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from create_bot import support_ids
-import asyncpg
 from mailing import bot_mailing
 from aiogram.types.callback_query import CallbackQuery
 from asyncio import sleep
@@ -122,17 +121,14 @@ async def mailing_text(message: types.Message, state: FSMContext):
 
 
 async def next(callback: CallbackQuery, state: FSMContext):
-    con = await asyncpg.connect(DATABASE_URL)
-    users = await con.fetch('SELECT "user_id" FROM "users"')
+    users = cur.execute('SELECT "user_id" FROM "users"').fetchone()
     print(users)
-    await con.close()
     data = await state.get_data()
     text = data.get('text')
     await state.finish()
-    for user in users:
-        for i in user:
-            await dp.bot.send_message(chat_id=i, text=text)
-            await sleep(0.33)
+    for i in users:
+        await dp.bot.send_message(chat_id=i, text=text)
+        await sleep(0.33)
     await callback.message.answer('Розсилка виконана', reply_markup=kb_admin())
 
 
@@ -155,10 +151,8 @@ async def mailing_send(message: types.Message, state: FSMContext):
 
 
 async def start_next(callback: CallbackQuery, state: FSMContext):
-    con = await asyncpg.connect(DATABASE_URL)
-    users = await con.fetch('SELECT "user_id" FROM "users"')
+    users = cur.execute('SELECT "user_id" FROM "users"').fetchall()
     print(users)
-    await con.close()
     data = await state.get_data()
     text = data.get('text')
     photo = data.get('photo')
@@ -186,15 +180,13 @@ async def quit(callback: CallbackQuery, state: FSMContext):
 ########################################################################################################################
 
 async def stasistic(message: types.Message):
-    con = await asyncpg.connect(DATABASE_URL)
-    result = await con.fetch('SELECT "user_id" FROM "users"')
+    result = cur.execute('SELECT "user_id" FROM "users"').fetchall()
     print(result)
-    await con.close()
     await message.answer(f'Кількість відвідувачів бота: {len(result)}')
 
 
 def register_handlers_start_admin(dp: Dispatcher):
-    dp.register_message_handler(make_changes_command, Text(equals='Адмін', ignore_case=True))
+    dp.register_message_handler(make_changes_command, Text(equals='Admin', ignore_case=True))
     dp.register_message_handler(cancel_admin, Text(equals='Відмінити створення товару', ignore_case=True), state="*")
     dp.register_message_handler(cmd_start_admin, Text(equals='Завантажити товар'), state=None)
     dp.register_message_handler(check_photo, lambda message: not message.photo, state=FSMAdmin.photo)

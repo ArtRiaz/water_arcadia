@@ -1,6 +1,4 @@
-FROM python:3.10
-
-RUN mkdir /src
-WORKDIR /src
-COPY . /src
+FROM python:3.9
+WORKDIR /app
+COPY . .
 RUN pip install -r requirements.txt
