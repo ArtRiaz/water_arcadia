@@ -1,0 +1,8 @@
+pip~=23.1.2
+wheel~=0.40.0
+cryptography~=41.0.2
+asyncio~=3.4.3
+setuptools~=68.0.0
+aiogram~=2.24
+asyncpg~=0.28.0
+environs~=9.5.0
